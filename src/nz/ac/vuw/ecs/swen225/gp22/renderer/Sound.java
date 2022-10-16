@@ -19,7 +19,8 @@ public class Sound {
 
 	//Fields
 	
-	private String amb, move, lockedD, openD, keyPick, chapStung, win;
+	private String amb, move, lockedD, openD, keyPick, pickUp, chapStung, win;
+	private Clip clip1, clip2;
 	
 
 	/**
@@ -44,7 +45,8 @@ public class Sound {
 		move = "res/audio/soundMove2.wav";
 		lockedD = "res/audio/soundLocked.wav";
 		openD = "res/audio/soundOpen.wav";
-		keyPick = "res/audio/soundPickup.wav";
+		keyPick = "res/audio/soundKeyPickup.wav";
+	    pickUp = "res/audio/soundPickup.wav";
 		chapStung = "res/audio/soundStung.wav";
 		win = "res/audio/soundWin.wav";
 	}
@@ -100,8 +102,16 @@ public class Sound {
 	 *  Calls the play function
 	 * */
 	public void playKeyPickup() {
-			play(keyPick);
+		play(keyPick);
 	}
+	
+	/** Plays the locked door sound
+     * 
+     *  Calls the play function
+     * */
+    public void playPickup() {
+            play(pickUp);
+    }
 	
 	/** Plays the move sound
 	 * 
@@ -114,40 +124,70 @@ public class Sound {
 	/**
 	 * Play function
 	 * 
-	 * Reponsible for playing the sound of a given file
+	 * Responsible for playing the sound of a given file
 	 * 
 	 * @param soundName
 	 */
-	public void play(String soundName) {
+	private void play(String soundName) {
 		//loads the sound file and plays it
 		try {
 			File f = new File("./" + soundName);
 		    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(f.toURI().toURL());  
-	        Clip clip = AudioSystem.getClip();
-	        clip.open(audioInputStream);
-	        clip.start();
+	        clip1 = AudioSystem.getClip();
+	        clip1.open(audioInputStream);
+	        clip1.start();
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
 	}
 	
 	/**
+	 * Play Background function
 	 * 
-	 * */
-	public void playBackground(String soundName) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+	 * Responsible for playing the sound of a given file, in this case
+	 * this is to handle the background.
+	 * 
+	 * @param soundName
+	 */
+	private void playBackground(String soundName) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
 		//loads the sound file and plays it
 		try {
 			File f = new File("./" + soundName);
 		    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(f.toURI().toURL());  
-	        Clip clip = AudioSystem.getClip();
-	        clip.open(audioInputStream);
-            FloatControl volume= (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+	        clip2 = AudioSystem.getClip();
+	        clip2.open(audioInputStream);
+            FloatControl volume= (FloatControl) clip2.getControl(FloatControl.Type.MASTER_GAIN);
             volume.setValue(-10.0f);
-	        clip.loop(Clip.LOOP_CONTINUOUSLY);
+	        clip2.loop(Clip.LOOP_CONTINUOUSLY);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
 	}
-
+	
+	/**
+	 * Stop method to force sound effects clips to stop
+	 * 
+	 * */
+	public void stop() {
+		clip1.stop();
+	}
+	
+	/**
+	 * Stop method to force background sound clip to stop
+	 * 
+	 * */
+	public void stopBackground() {
+		clip2.stop();
+	}
+	
+	/**
+	 * Checks if the clip sound file has a clip running.
+	 * 
+	 * */
+	public boolean isRunning() {
+		if(clip1 != null) {
+		return clip1.isRunning();
+		} else {return false;}
+	}
 	
 }

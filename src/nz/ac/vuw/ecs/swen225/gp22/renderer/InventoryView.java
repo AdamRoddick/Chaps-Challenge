@@ -17,16 +17,16 @@ import nz.ac.vuw.ecs.swen225.gp22.app.*;
  * 
  * @author Benjamin McEvoy - 300579954
  * */
+@SuppressWarnings("serial")
 public class InventoryView extends JComponent{
 	
 	//Fields
 	private static final int INVENTORY_WIDTH = 4;
 	private static final int INVENTORY_HEIGHT = 2;
 	private static final int IMAGE_SIZE = 42;
-	//private static final int GAP = 250;
     private static final int GAP = (85 - IMAGE_SIZE * INVENTORY_HEIGHT)/2; //gap before drawing
 	
-	private Map<String, Image> mapImages = new HashMap<String, Image>();
+	private Map<String, Image> imageCache = new HashMap<String, Image>();
 	private ChapTile chap;
 	private Maze maze;
 	
@@ -55,18 +55,24 @@ public class InventoryView extends JComponent{
 	 */
 	private void initImage(){
 		try {
-			String dir = "res/graphics/";
-			mapImages.put("freeTile", ImageIO.read(new File(dir + "freeTile.png")));
-			mapImages.put("keyTile_red", ImageIO.read(new File(dir + "keyTile_red.png")));
-			mapImages.put("keyTile_green", ImageIO.read(new File(dir + "keyTile_green.png")));
-			mapImages.put("keyTile_blue", ImageIO.read(new File(dir + "keyTile_blue.png")));
-			mapImages.put("keyTile_yellow", ImageIO.read(new File(dir + "keyTile_yellow.png")));
+		  
+          File folder = new File("res/graphics");
+          File[] imageList = folder.listFiles();
+          for(int i = 0; i< imageList.length; i++){
+              if(imageList[i].isFile()){
+                  String imageName = imageList[i].getName().substring(0 , imageList[i].getName().length()-4);
+                  imageCache.put(imageName, ImageIO.read(imageList[i]));
+              } 
+          }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void getChap() {
+	/** Gets the Chap
+	 * 
+	 * */
+	private void getChap() {
 		Set<Tile> tileSet = maze.getAllTiles();
 		for(Tile t : tileSet) {
 			if(t instanceof ChapTile) {
@@ -75,15 +81,30 @@ public class InventoryView extends JComponent{
 		}
 	}
 	
-	public void focusArea(Graphics2D g) {
+	/** 
+	 * Draws a focus area of a 4x2 for the 
+	 * inventory view.
+	 * 
+	 * @param Graphics2D g - the graph it's being drawn on
+	 * */
+	private void focusArea(Graphics2D g) {
 		for(int col = 0; col < INVENTORY_WIDTH; col++) {
 			for(int row = 0; row < INVENTORY_HEIGHT; row++) {
-				g.drawImage(mapImages.get("freeTile"), col*IMAGE_SIZE + GAP, row*IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE, this);
+				g.drawImage(imageCache.get("freeTile"), col*IMAGE_SIZE + GAP, row*IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE, this);
 			}
 		}
 	}
 	
-	public void drawKey(int x, int y, Graphics2D g) {
+	
+	/**
+	 * Draws the keys whenever a key is in Chap's possession,
+	 * or is removed from chap's possession.
+	 * 
+	 * @param int x - Value it's drawing
+	 * @param int y - Value it's drawing
+	 * @param Graphics2D g - the graph it's being drawn on
+	 * */
+	private void drawKey(int x, int y, Graphics2D g) {
 		for(int i = 0; i < chap.getKeys().size(); i++) {
 			KeyTile key = chap.getKeys().get(i);
 			if(i > INVENTORY_WIDTH-1) {
@@ -92,16 +113,16 @@ public class InventoryView extends JComponent{
 			}
 			switch(key.getColor()) {
 				case "blue":
-					g.drawImage(mapImages.get("keyTile_blue"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
+					g.drawImage(imageCache.get("keyTile_blue"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
 					break;
 				case "red":
-					g.drawImage(mapImages.get("keyTile_red"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
+					g.drawImage(imageCache.get("keyTile_red"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
 					break;
 				case "green":
-					g.drawImage(mapImages.get("keyTile_green"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
+					g.drawImage(imageCache.get("keyTile_green"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
 					break;
 				case "yellow":
-					g.drawImage(mapImages.get("keyTile_yellow"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
+					g.drawImage(imageCache.get("keyTile_yellow"), x, y, IMAGE_SIZE, IMAGE_SIZE, this);
 					break;
 				default:
 					System.out.println("Something went wrong");
@@ -111,6 +132,14 @@ public class InventoryView extends JComponent{
 		}
 	}
 	
+	
+	/**
+	 * Overrides the paintComponent from the Javax,
+	 * Responsible for drawing the inventory view area in the Application 
+	 *
+	 * 
+	 * @param Graphics g - Graphics pane being draw on
+	 * */
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
